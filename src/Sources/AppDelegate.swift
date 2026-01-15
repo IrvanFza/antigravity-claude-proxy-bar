@@ -29,9 +29,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         setupMenuBar()
         setupObservers()
 
-        // Auto-start server if enabled
+        // Check installation status at startup
+        let isInstalled = serverManager.checkInstallation()
+        if !isInstalled {
+            showNotification(
+                title: "Installation Required",
+                body: "antigravity-claude-proxy is not installed. Please install it to use this application."
+            )
+        }
+
+        // Auto-start server if enabled and installed
         let autoStart = UserDefaults.standard.object(forKey: "autoStart") as? Bool ?? true
-        if autoStart {
+        if autoStart && isInstalled {
             startServer()
         }
     }
@@ -64,6 +73,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     // MARK: - Observers
 
     private func setupObservers() {
+        // Observe installation status
+        serverManager.$isInstalled
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isInstalled in
+                self?.updateMenuBar(installed: isInstalled)
+            }
+            .store(in: &cancellables)
+
         // Observe server status changes
         serverManager.$isRunning
             .receive(on: DispatchQueue.main)
@@ -122,17 +139,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
         menu.addItem(NSMenuItem.separator())
 
+        // Installation Instructions
+        let installationItem = NSMenuItem(title: "Installation Instructions", action: #selector(openInstallationGuide), keyEquivalent: "i")
+        installationItem.target = self
+        menu.addItem(installationItem)
+
+        // Check for Updates
+        let checkForUpdatesItem = NSMenuItem(title: "Check for Updates", action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "u")
+        checkForUpdatesItem.target = updaterController
+        menu.addItem(checkForUpdatesItem)
+
+        menu.addItem(NSMenuItem.separator())
+
         // Settings
         let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
-
-        menu.addItem(NSMenuItem.separator())
-
-        // Check for Updates
-        let checkForUpdatesItem = NSMenuItem(title: "Check for Updates...", action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
-        checkForUpdatesItem.target = updaterController
-        menu.addItem(checkForUpdatesItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -182,6 +204,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
     }
 
+    private func updateMenuBar(installed: Bool) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.startStopMenuItem.isEnabled = installed
+
+            if !installed {
+                self.startStopMenuItem.title = "Start Server (Not Installed)"
+            } else {
+                self.startStopMenuItem.title = self.serverManager.isRunning ? "Stop Server" : "Start Server"
+            }
+        }
+    }
+
     // MARK: - Server Control
 
     private func startServer() {
@@ -205,6 +240,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 
     @objc private func toggleServer() {
+        guard serverManager.isInstalled else {
+            showNotification(
+                title: "Not Installed",
+                body: "Please install antigravity-claude-proxy first. See Installation Instructions for help."
+            )
+            return
+        }
+
         if serverManager.isRunning {
             stopServer()
         } else {
@@ -221,6 +264,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         if let url = URL(string: "http://localhost:\(effectivePort)") {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    @objc private func openInstallationGuide() {
+        NSWorkspace.shared.open(AppConstants.installationGuideURL)
     }
 
     @objc private func openSettings() {

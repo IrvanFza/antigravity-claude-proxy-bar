@@ -10,10 +10,13 @@ class ServerManager: ObservableObject {
 
     @Published private(set) var isRunning: Bool = false
     @Published private(set) var logs: [String] = []
+    @Published private(set) var isInstalled: Bool = true
 
     private let maxLogLines = 500
 
-    private init() {}
+    private init() {
+        _ = checkInstallation()
+    }
 
     // MARK: - Server Control
 
@@ -127,6 +130,14 @@ class ServerManager: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             self?.logs.removeAll()
         }
+    }
+
+    func checkInstallation() -> Bool {
+        let installed = (findCommand("antigravity-claude-proxy") ?? findCommand("npx")) != nil
+        DispatchQueue.main.async { [weak self] in
+            self?.isInstalled = installed
+        }
+        return installed
     }
 
     // MARK: - Private Methods

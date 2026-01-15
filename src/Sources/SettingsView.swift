@@ -27,6 +27,7 @@ struct SettingsView: View {
             // Content
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
+                    installationSection
                     serverSection
                     startupSection
                     actionsSection
@@ -38,11 +39,8 @@ struct SettingsView: View {
                 .padding(12)
             }
 
-            Spacer()
-                .frame(height: 6)
-
             // Footer
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 HStack(spacing: 4) {
                     Text("AntiGravity Claude Proxy \(appVersion)")
                         .font(.caption)
@@ -78,7 +76,6 @@ struct SettingsView: View {
                         }
                 }
             }
-            .padding(.bottom, 12)
 
             // Hidden button for Command+Q keyboard shortcut
             Button("") {
@@ -87,7 +84,7 @@ struct SettingsView: View {
             .keyboardShortcut("q", modifiers: .command)
             .hidden()
         }
-        .frame(minWidth: 300, minHeight: 450)
+        .frame(minWidth: 300, minHeight: 540)
         .onAppear {
             loadLaunchAtLoginState()
             portText = String(serverPort)
@@ -118,6 +115,7 @@ struct SettingsView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(serverManager.isRunning ? .red : .green)
+            .disabled(!serverManager.isInstalled)
         }
         .padding(16)
         .background(Color(NSColor.controlBackgroundColor))
@@ -241,9 +239,69 @@ struct SettingsView: View {
         .background(RoundedRectangle(cornerRadius: 8).fill(Color(NSColor.controlBackgroundColor)))
     }
 
+    // MARK: - Installation Section
+
+    private var installationSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Label(
+                        serverManager.isInstalled ? "Setup Information" : "Installation Required",
+                        systemImage: serverManager.isInstalled ? "info.circle" : "exclamationmark.triangle"
+                    )
+                    .font(.headline)
+
+                    Spacer()
+
+                    if serverManager.isInstalled {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.headline)
+                    }
+                }
+                Text("This application is a menu bar wrapper for the antigravity-claude-proxy package. The actual proxy server needs to be installed separately on your system.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if !serverManager.isInstalled {
+                    Text("⚠️ The antigravity-claude-proxy package is not currently installed. Please install it to enable server functionality.")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            Button(action: {
+                NSWorkspace.shared.open(AppConstants.installationGuideURL)
+            }) {
+                HStack {
+                    Image(systemName: "book")
+                    Text("View Installation Guide")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(serverManager.isInstalled
+                    ? Color(NSColor.controlBackgroundColor)
+                    : Color(NSColor.systemYellow).opacity(0.1))
+        )
+    }
+
     // MARK: - Actions
 
     private func toggleServer() {
+        guard serverManager.isInstalled else {
+            NotificationCenter.default.post(name: .showServerNotification,
+                                            object: nil,
+                                            userInfo: ["title": "Not Installed", "body": "Please install antigravity-claude-proxy first"])
+            return
+        }
+
         if serverManager.isRunning {
             serverManager.stopServer()
             NotificationCenter.default.post(name: .showServerNotification,
