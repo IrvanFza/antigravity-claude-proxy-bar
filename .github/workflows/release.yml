@@ -25,12 +25,13 @@ jobs:
         with:
           swift-version: "5.9"
 
-      # Import Apple Developer certificates
-      - name: Import Code Signing Certificates
-        uses: apple-actions/import-codesign-certs@v2
-        with:
-          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
-          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+      # Import Apple Developer certificates (skipped for ad-hoc signing)
+      # To enable proper signing, set up secrets and uncomment this step
+      # - name: Import Code Signing Certificates
+      #   uses: apple-actions/import-codesign-certs@v2
+      #   with:
+      #     p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+      #     p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
 
       # Install the provisioning profile (if needed for distribution)
       # Note: Not typically needed for Developer ID distribution
@@ -53,7 +54,7 @@ jobs:
 
       - name: Build app bundle
         env:
-          CODESIGN_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}
+          CODESIGN_IDENTITY: "-"  # Ad-hoc signing (change to Developer ID for proper signing)
           APP_VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
           chmod +x create-app-bundle.sh
@@ -64,45 +65,46 @@ jobs:
         run: |
           codesign --verify --deep --strict --verbose=2 "AntiGravity Claude Proxy.app"
           codesign -dv --verbose=4 "AntiGravity Claude Proxy.app"
-          spctl -a -vvv -t install "AntiGravity Claude Proxy.app" || echo "⚠️ Gatekeeper check failed (expected without notarization)"
+          echo "⚠️ Note: Ad-hoc signing - Gatekeeper check skipped (will show warning to users)"
 
-      # Notarize the app for seamless installation (no Gatekeeper warnings)
-      - name: Notarize App
-        run: |
-          # Create a ZIP for notarization
-          ditto -c -k --sequesterRsrc --keepParent "AntiGravity Claude Proxy.app" "AntiGravityClaudeProxy-notarize.zip"
-
-          # Submit for notarization and capture the submission ID
-          echo "Submitting app for notarization..."
-          SUBMIT_OUTPUT=$(xcrun notarytool submit "AntiGravityClaudeProxy-notarize.zip" \
-            --apple-id "${{ secrets.APPLE_ID }}" \
-            --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-            --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
-            --wait --output-format json)
-
-          echo "$SUBMIT_OUTPUT"
-          SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | jq -r '.id')
-          STATUS=$(echo "$SUBMIT_OUTPUT" | jq -r '.status')
-
-          # If it failed, get the detailed log
-          if [ "$STATUS" != "Accepted" ]; then
-            echo "❌ Notarization failed with status: $STATUS"
-            echo "📋 Getting detailed log..."
-            xcrun notarytool log "$SUBMISSION_ID" \
-              --apple-id "${{ secrets.APPLE_ID }}" \
-              --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-              --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}"
-            exit 1
-          fi
-
-          # Staple the notarization ticket
-          echo "✅ Notarization succeeded! Stapling ticket..."
-          xcrun stapler staple "AntiGravity Claude Proxy.app"
-          xcrun stapler validate "AntiGravity Claude Proxy.app"
-          echo "✅ App successfully notarized and stapled!"
-
-          # Remove the notarization ZIP
-          rm "AntiGravityClaudeProxy-notarize.zip"
+      # Notarize the app (skipped for ad-hoc signing)
+      # To enable notarization, set up APPLE_ID, APPLE_TEAM_ID, and APPLE_APP_SPECIFIC_PASSWORD secrets, then uncomment this step
+      # - name: Notarize App
+      #   run: |
+      #     # Create a ZIP for notarization
+      #     ditto -c -k --sequesterRsrc --keepParent "AntiGravity Claude Proxy.app" "AntiGravityClaudeProxy-notarize.zip"
+      #
+      #     # Submit for notarization and capture the submission ID
+      #     echo "Submitting app for notarization..."
+      #     SUBMIT_OUTPUT=$(xcrun notarytool submit "AntiGravityClaudeProxy-notarize.zip" \
+      #       --apple-id "${{ secrets.APPLE_ID }}" \
+      #       --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+      #       --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
+      #       --wait --output-format json)
+      #
+      #     echo "$SUBMIT_OUTPUT"
+      #     SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | jq -r '.id')
+      #     STATUS=$(echo "$SUBMIT_OUTPUT" | jq -r '.status')
+      #
+      #     # If it failed, get the detailed log
+      #     if [ "$STATUS" != "Accepted" ]; then
+      #       echo "❌ Notarization failed with status: $STATUS"
+      #       echo "📋 Getting detailed log..."
+      #       xcrun notarytool log "$SUBMISSION_ID" \
+      #         --apple-id "${{ secrets.APPLE_ID }}" \
+      #         --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+      #         --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}"
+      #       exit 1
+      #     fi
+      #
+      #     # Staple the notarization ticket
+      #     echo "✅ Notarization succeeded! Stapling ticket..."
+      #     xcrun stapler staple "AntiGravity Claude Proxy.app"
+      #     xcrun stapler validate "AntiGravity Claude Proxy.app"
+      #     echo "✅ App successfully notarized and stapled!"
+      #
+      #     # Remove the notarization ZIP
+      #     rm "AntiGravityClaudeProxy-notarize.zip"
 
       - name: Create DMG
         run: |
@@ -119,7 +121,7 @@ jobs:
             --icon "AntiGravity Claude Proxy.app" 175 120 \
             --hide-extension "AntiGravity Claude Proxy.app" \
             --app-drop-link 425 120 \
-            --codesign "${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}" \
+            --codesign "-" \
             "AntiGravityClaudeProxy.dmg" \
             "AntiGravity Claude Proxy.app" || true
 
@@ -239,7 +241,7 @@ jobs:
 
             ### Verification
 
-            This release is **code signed** with Apple Developer ID and includes SHA-256 checksums for verification.
+            This release is **ad-hoc signed** and includes SHA-256 checksums for verification.
 
             To verify the download:
             ```bash
@@ -248,9 +250,12 @@ jobs:
 
             ---
 
-            ✅ **Code Signed & Notarized**: This app is signed with an Apple Developer ID and notarized by Apple
+            ⚠️ **Ad-hoc Signed**: This app uses ad-hoc code signing.
 
-            **No Gatekeeper warnings** - Double-click to install and run seamlessly!
+            **First-time users**: When you first launch the app, you may see a Gatekeeper warning.
+            To bypass: Right-click the app → Open → Click "Open" in the dialog.
+
+            **After first launch**: macOS will remember your choice and the app will open normally.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
