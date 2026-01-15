@@ -5,5 +5,16 @@
         <link>https://irvanfza.github.io/antigravity-claude-proxy-bar/appcast.xml</link>
         <description>Updates for AntiGravity Claude Proxy</description>
         <language>en</language>
+    <item>
+      <title>Version 1.0.0</title>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+      <pubDate>Thu, 15 Jan 2026 05:36:42 +0000</pubDate>
+      <enclosure url="https://github.com/IrvanFza/antigravity-claude-proxy-bar/releases/download/v1.0.0/AntiGravityClaudeProxy.zip"
+                 type="application/octet-stream"
+                 sparkle:edSignature="XT2/JJLasU9GrFZoX7IS/zEiQcEYVC+u2L7i9sfddjdaOp38H6ipQKFI+wDA2zfQlD5K9aLGWt5OEQ+Rs6F1AA=="
+                 length="2796875"/>
+    </item>
     </channel>
 </rss>
