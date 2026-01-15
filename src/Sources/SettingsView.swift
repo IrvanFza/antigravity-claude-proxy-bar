@@ -79,8 +79,15 @@ struct SettingsView: View {
                 }
             }
             .padding(.bottom, 12)
+
+            // Hidden button for Command+Q keyboard shortcut
+            Button("") {
+                quitApp()
+            }
+            .keyboardShortcut("q", modifiers: .command)
+            .hidden()
         }
-        .frame(minWidth: 300, minHeight: 400)
+        .frame(minWidth: 300, minHeight: 450)
         .onAppear {
             loadLaunchAtLoginState()
             portText = String(serverPort)
@@ -146,7 +153,7 @@ struct SettingsView: View {
                     .foregroundColor(.secondary)
             }
 
-            Text("After changing the port, restart the server and update ANTHROPIC_BASE_URL with new port.")
+            Text("Restart the server and update ANTHROPIC_BASE_URL with new port.")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -291,5 +298,12 @@ struct SettingsView: View {
                 print("Failed to set launch at login: \(error)")
             }
         }
+    }
+
+    // MARK: - App Control
+
+    private func quitApp() {
+        serverManager.stopServer()
+        NSApp.terminate(nil)
     }
 }
