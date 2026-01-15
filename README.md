@@ -9,11 +9,17 @@
 <a href="https://github.com/IrvanFza/antigravity-claude-proxy-bar"><img alt="Star this repo" src="https://img.shields.io/github/stars/IrvanFza/antigravity-claude-proxy-bar.svg?style=social&amp;label=Star%20this%20repo&amp;maxAge=60" style="max-width: 100%;"></a>
 </p>
 
+> **Help Wanted: Apple Developer ID Sponsorship**
+>
+> This project currently requires users to build the app from source because we don't have an Apple Developer ID certificate for code signing and notarization. Without proper signing, macOS Gatekeeper blocks downloaded apps.
+>
+> If you have an Apple Developer account and would like to help sponsor code signing for this project, please [open an issue](https://github.com/IrvanFza/antigravity-claude-proxy-bar/issues) or reach out! This would allow us to distribute pre-built binaries that work out of the box for all users.
+
 **A beautiful native macOS menu bar application for managing the AntiGravity Claude Proxy server.**
 
 This app is a convenient wrapper around [antigravity-claude-proxy](https://github.com/badrisnarayanan/antigravity-claude-proxy), providing an easy-to-use menu bar interface to start, stop, and configure your proxy server. No need to deal with terminal commands – just click and go!
 
-Built with Swift and SwiftUI, it offers a native macOS experience with automatic updates via Sparkle framework.
+Built with Swift and SwiftUI, it offers a native macOS experience.
 
 <p align="center">
   <img src="images/application.png" width="600" alt="AntiGravity Claude Proxy Bar">
@@ -24,13 +30,12 @@ Built with Swift and SwiftUI, it offers a native macOS experience with automatic
 - 🎯 **Native macOS Experience** - Clean, native SwiftUI interface that feels right at home on macOS
 - 🚀 **One-Click Server Management** - Start/stop the antigravity-claude-proxy server from your menu bar
 - ⚡ **Installation Check** - Automatically detects if antigravity-claude-proxy is installed with helpful guidance if not
-- 📋 **Installation Instructions** - Quick access to installation guide via menu bar (⌘I) or settings
+- 📋 **Installation Instructions** - Quick access to installation guide via menu bar or settings
 - 🔄 **Auto-start** - Optionally start the server automatically when the app launches
 - 🌐 **Quick WebUI Access** - Open the proxy web interface with one click
 - ⚙️ **Configurable Port** - Set custom port for the proxy server (default: 8080)
 - 🔔 **Notifications** - Get notified when the server starts, stops, or encounters errors
 - 🚦 **Status Indicator** - Menu bar icon shows server status (bolt icon: green when running, gray when stopped)
-- 🔄 **Automatic App Updates** - Built-in update checker using Sparkle framework
 - 🎨 **Beautiful Icons** - Custom icons with template rendering for perfect menu bar integration
 - 💾 **Launch at Login** - Start the app automatically when you log in to macOS
 
@@ -50,48 +55,38 @@ Or use it via npx (the app will detect and use npx if the global package is not 
 
 For more information, see the [antigravity-claude-proxy installation guide](https://github.com/badrisnarayanan/antigravity-claude-proxy).
 
-### Download Pre-built Release (Recommended)
-
-1. Go to the [**Releases**](https://github.com/IrvanFza/antigravity-claude-proxy-bar/releases) page
-2. Download the latest `AntiGravityClaudeProxy.zip`
-3. Extract and drag `AntiGravity Claude Proxy.app` to `/Applications`
-4. Launch AntiGravity Claude Proxy
-
 ### Build from Source
 
-Want to build it yourself?
+Since this app is not code-signed with an Apple Developer ID, you'll need to build it yourself. Don't worry - it's straightforward!
 
 #### Requirements
 
 - macOS 13.0 or later
-- Xcode Command Line Tools
+- Xcode Command Line Tools (`xcode-select --install`)
 - Swift 5.9+
 
-#### Build the App
+#### Quick Start
 
 ```bash
-# Build and create the app bundle
+# Clone the repository
+git clone https://github.com/IrvanFza/antigravity-claude-proxy-bar.git
+cd antigravity-claude-proxy-bar
+
+# Build and install to /Applications
+make install
+
+# Launch the app
+open "/Applications/AntiGravity Claude Proxy.app"
+```
+
+#### Alternative: Build Only
+
+```bash
+# Build the app bundle (creates "AntiGravity Claude Proxy.app" in current directory)
 make build
 
-# Or run the build script directly
-./create-app-bundle.sh
-```
-
-#### Install
-
-```bash
-# Install to /Applications
-make install
-```
-
-#### Run
-
-```bash
-# Run the app
+# Run directly without installing
 make run
-
-# Or open directly
-open "AntiGravity Claude Proxy.app"
 ```
 
 ## Usage
@@ -113,7 +108,6 @@ open "AntiGravity Claude Proxy.app"
 | **Start/Stop Server**         | ⌘S       | Toggle the proxy server on/off                        |
 | **Open WebUI**                | ⌘O       | Opens the web interface in your default browser       |
 | **Installation Instructions** | ⌘I       | Opens the antigravity-claude-proxy installation guide |
-| **Check for Updates**         | ⌘U       | Check for app updates                                 |
 | **Settings...**               | ⌘,       | Opens the settings window                             |
 | **Quit**                      | ⌘Q       | Stops the server and exits the app                    |
 
@@ -226,7 +220,6 @@ antigravity-claude-proxy-bar/
 - **ServerManager**: Controls the antigravity-claude-proxy process, checks installation status, and manages logs
 - **SettingsView**: SwiftUI interface with native macOS design and real-time status updates
 - **Constants**: Centralized constants including GitHub URLs for installation instructions
-- **Sparkle Integration**: Automatic update checking and installation
 
 ### Technical Details
 
@@ -243,7 +236,6 @@ The app intelligently searches for `antigravity-claude-proxy` in multiple locati
 
 - Built with Swift and SwiftUI for native macOS performance
 - Uses Combine framework for reactive UI updates
-- Sparkle framework for automatic app updates
 - Process management via Foundation's Process API
 
 ### Reporting Issues
