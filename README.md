@@ -248,6 +248,33 @@ Found a bug or have a feature request? Please [open an issue](https://github.com
 - Your macOS version and app version
 - Relevant logs or screenshots
 
+## Roadmap
+
+### Completed
+
+- [x] Native macOS menu bar application with SwiftUI
+- [x] One-click server start/stop with keyboard shortcuts
+- [x] Real-time server logs with color-coded errors
+- [x] Configurable port settings
+- [x] Auto-start server on app launch
+- [x] Launch at login support
+- [x] Installation detection and user guidance
+- [x] Quick WebUI access and URL copy
+- [x] macOS notifications for server events
+- [x] Support for multiple node version managers (Volta, fnm, asdf, NVM, npm, pnpm, yarn)
+- [x] Sparkle framework for auto-updates
+- [x] Node PATH fix for GUI app compatibility (v1.0.1)
+- [x] VERSION file for centralized version management
+
+### Planned
+
+- [ ] (P0) **Apple Developer ID for code signing** - Allow users to download and run the app directly without building from source
+- [ ] (P1) Add support for more node version managers (mise, proto, nodenv, n)
+- [ ] (P1) Add port-in-use check with helpful error message
+- [ ] (P1) Improve error handling and logging
+
+See [TODO.md](TODO.md) for detailed implementation notes.
+
 ## Credits
 
 This app is built as a native macOS wrapper around [antigravity-claude-proxy](https://github.com/badrisnarayanan/antigravity-claude-proxy), an excellent proxy server for Claude AI.
