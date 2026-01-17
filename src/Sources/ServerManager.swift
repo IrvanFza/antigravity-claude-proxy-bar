@@ -50,9 +50,17 @@ class ServerManager: ObservableObject {
             process?.arguments = ["antigravity-claude-proxy", "start"]
         }
 
-        // Set environment
+        // Set environment with proper PATH for node
         var env = ProcessInfo.processInfo.environment
         env["PORT"] = String(port)
+
+        // Add node's directory to PATH so #!/usr/bin/env node works
+        if let nodePath = findCommand("node") {
+            let nodeDir = (nodePath as NSString).deletingLastPathComponent
+            let currentPath = env["PATH"] ?? "/usr/bin:/bin"
+            env["PATH"] = "\(nodeDir):\(currentPath)"
+        }
+
         process?.environment = env
 
         process?.standardOutput = outputPipe
