@@ -79,13 +79,16 @@ fi
 echo -e "${BLUE}Copying Info.plist...${NC}"
 cp "$SRC_DIR/Info.plist" "$APP_DIR/Contents/"
 
-# Inject version from git tag or environment variable
+# Inject version from VERSION file or environment variable
 VERSION="${APP_VERSION:-}"
 if [ -z "$VERSION" ]; then
-    # Try to get version from git tag
-    VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
-    # Remove 'v' prefix if present
-    VERSION="${VERSION#v}"
+    # Read version from VERSION file
+    VERSION_FILE="$(dirname "$0")/VERSION"
+    if [ -f "$VERSION_FILE" ]; then
+        VERSION=$(cat "$VERSION_FILE" | tr -d '[:space:]')
+    else
+        VERSION="1.0.0"
+    fi
 fi
 
 # Extract build number from commit count

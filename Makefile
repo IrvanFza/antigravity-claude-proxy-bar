@@ -1,4 +1,4 @@
-.PHONY: build clean install run dev
+.PHONY: build clean install run dev tag
 
 # Build the app bundle
 build:
@@ -33,3 +33,18 @@ dev:
 test-build:
 	@cd src && swift build
 	@echo "Build successful"
+
+# Create git tag from VERSION file (annotated with message)
+# Usage: make tag MSG="Release notes here"
+tag:
+	@VERSION=$$(cat VERSION | tr -d '[:space:]'); \
+	if git rev-parse "v$$VERSION" >/dev/null 2>&1; then \
+		echo "Tag v$$VERSION already exists"; \
+	else \
+		if [ -n "$(MSG)" ]; then \
+			git tag -a "v$$VERSION" -m "$(MSG)"; \
+		else \
+			git tag -a "v$$VERSION" -m "Release v$$VERSION"; \
+		fi; \
+		echo "Created tag v$$VERSION"; \
+	fi
