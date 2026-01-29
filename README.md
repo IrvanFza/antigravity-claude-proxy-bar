@@ -22,7 +22,11 @@ This app is a convenient wrapper around [antigravity-claude-proxy](https://githu
 Built with Swift and SwiftUI, it offers a native macOS experience.
 
 <p align="center">
-  <img src="images/application.png" width="600" alt="AntiGravity Claude Proxy Bar">
+  <img width="325" height="268" alt="image" src="https://github.com/user-attachments/assets/e5f1d032-fadb-4b38-be2c-2ed79ee5eb65" />
+</p>
+
+<p align="center">
+  <img width="562" height="794" alt="image" src="https://github.com/user-attachments/assets/170ba684-a51b-407f-a23d-8c6ef67e54d5" />
 </p>
 
 ## Features
