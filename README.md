@@ -118,7 +118,7 @@ make run
 
 ### Settings Window
 
-<img src="images/setting-ui.png" width="300" alt="AntiGravity Claude Proxy Settings">
+<img width="562" height="794" alt="image" src="https://github.com/user-attachments/assets/170ba684-a51b-407f-a23d-8c6ef67e54d5" />
 
 **Setup Information Section**
 
