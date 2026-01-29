@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var launchAtLogin: Bool = false
     @State private var showingLogs: Bool = false
     @State private var portText: String = "8080"
+    @State private var proxyVersionString: String?
 
     @ObservedObject private var serverManager = ServerManager.shared
 
@@ -42,7 +43,15 @@ struct SettingsView: View {
             // Footer
             VStack(spacing: 2) {
                 HStack(spacing: 4) {
-                    Text("AntiGravity Claude Proxy \(appVersion)")
+                    if let proxyVersion = proxyVersionString {
+                        Text("AntiGravity Claude Proxy v\(proxyVersion)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("|")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Text("Menu Bar \(appVersion)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -88,6 +97,7 @@ struct SettingsView: View {
         .onAppear {
             loadLaunchAtLoginState()
             portText = String(serverPort)
+            proxyVersionString = serverManager.getProxyVersion()
         }
     }
 

@@ -148,6 +148,32 @@ class ServerManager: ObservableObject {
         return installed
     }
 
+    func getProxyVersion() -> String? {
+        guard let proxyPath = findCommand("antigravity-claude-proxy") else {
+            return nil
+        }
+
+        let process = Process()
+        let pipe = Pipe()
+        process.executableURL = URL(fileURLWithPath: proxyPath)
+        process.arguments = ["--version"]
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let version = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !version.isEmpty {
+                return version
+            }
+        } catch {}
+
+        return nil
+    }
+
     // MARK: - Private Methods
 
     private func findCommand(_ name: String) -> String? {
