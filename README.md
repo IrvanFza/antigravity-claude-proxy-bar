@@ -34,6 +34,7 @@ Built with Swift and SwiftUI, it offers a native macOS experience.
 - 🔄 **Auto-start** - Optionally start the server automatically when the app launches
 - 🌐 **Quick WebUI Access** - Open the proxy web interface with one click
 - ⚙️ **Configurable Port** - Set custom port for the proxy server (default: 8080)
+- 🎛️ **Account Selection Strategy** - Choose between Hybrid, Sticky, or Round-Robin for multi-account load balancing
 - 🔔 **Notifications** - Get notified when the server starts, stops, or encounters errors
 - 🚦 **Status Indicator** - Menu bar icon shows server status (bolt icon: green when running, gray when stopped)
 - 🎨 **Beautiful Icons** - Custom icons with template rendering for perfect menu bar integration
@@ -124,6 +125,10 @@ make run
 **Server Settings**
 
 - **Port**: Configure the port number for the proxy server (default: 8080)
+- **Strategy**: Choose how requests are distributed across multiple accounts:
+  - **Hybrid (Default)**: Smart distribution combining health, rate limiting, and quota awareness
+  - **Sticky**: Stays on the same account to maximize cache hits, switches only when rate-limited
+  - **Round-Robin**: Cycles through accounts sequentially for even load distribution
 - Changes require server restart to take effect
 
 **Startup Options**
@@ -265,6 +270,7 @@ Found a bug or have a feature request? Please [open an issue](https://github.com
 - [x] Sparkle framework for auto-updates
 - [x] Node PATH fix for GUI app compatibility (v1.0.1)
 - [x] VERSION file for centralized version management
+- [x] Account selection strategy with Hybrid, Sticky, and Round-Robin options (v1.1.0)
 
 ### Planned
 
