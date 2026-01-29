@@ -1,9 +1,32 @@
 import SwiftUI
 import ServiceManagement
 
+enum AccountStrategy: String, CaseIterable {
+    case hybrid = "hybrid"
+    case sticky = "sticky"
+    case roundRobin = "round-robin"
+
+    var displayName: String {
+        switch self {
+            case .hybrid: return "Hybrid (Default)"
+            case .sticky: return "Sticky (Cache-optimized)"
+            case .roundRobin: return "Round-Robin (Load-balanced)"
+        }
+    }
+
+    var description: String {
+        switch self {
+            case .hybrid: return "Hybrid: Smart distribution combining health, rate limiting, and quota awareness"
+            case .sticky: return "Sticky: Stays on the same account for cache hits, switches when rate-limited"
+            case .roundRobin: return "Round-Robin: Cycles through accounts sequentially for even distribution"
+        }
+    }
+}
+
 struct SettingsView: View {
     @AppStorage("serverPort") private var serverPort: Int = 8080
     @AppStorage("autoStart") private var autoStart: Bool = true
+    @AppStorage("accountStrategy") private var accountStrategy: String = AccountStrategy.hybrid.rawValue
     @State private var launchAtLogin: Bool = false
     @State private var showingLogs: Bool = false
     @State private var portText: String = "8080"
@@ -93,7 +116,7 @@ struct SettingsView: View {
             .keyboardShortcut("q", modifiers: .command)
             .hidden()
         }
-        .frame(minWidth: 300, minHeight: 540)
+        .frame(minWidth: 300, minHeight: 650)
         .onAppear {
             loadLaunchAtLoginState()
             portText = String(serverPort)
@@ -112,7 +135,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("AntiGravity Claude Proxy")
                     .font(.headline)
-                Text(serverManager.isRunning ? "Running on port \(portText)" : "Stopped")
+                Text(serverManager.isRunning ? "Running on port \(portText) with \(accountStrategy.prefix(1).uppercased() + accountStrategy.dropFirst()) strategy" : "Stopped")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -138,6 +161,18 @@ struct SettingsView: View {
             Text("Server Settings")
                 .font(.headline)
 
+            Text("Restart the server to apply port or strategy changes.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            Divider()
+                .padding(.vertical, 4)
+
+            Text("Set custom port for the proxy server. Default: 8080")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
             HStack {
                 Text("Port:")
                     .frame(width: 80, alignment: .leading)
@@ -155,15 +190,38 @@ struct SettingsView: View {
                             serverPort = port
                         }
                     }
-
-                Text("Default: 8080")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
 
-            Text("Restart the server and update ANTHROPIC_BASE_URL with new port.")
+            Divider()
+                .padding(.vertical, 4)
+
+            Text("Select how requests are distributed across multiple accounts.")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(alignment: .firstTextBaseline) {
+                Text("Strategy:")
+                    .frame(width: 80, alignment: .leading)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Picker("", selection: $accountStrategy) {
+                        ForEach(AccountStrategy.allCases, id: \.rawValue) { strategy in
+                            Text(strategy.displayName)
+                                .tag(strategy.rawValue)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .padding(.leading, -7)
+
+                    if let selected = AccountStrategy(rawValue: accountStrategy) {
+                        Text(selected.description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
         }
         .padding(10)
         .background(RoundedRectangle(cornerRadius: 8).fill(Color(NSColor.controlBackgroundColor)))
@@ -318,12 +376,13 @@ struct SettingsView: View {
                                             object: nil,
                                             userInfo: ["title": "Server Stopped", "body": "Antigravity Claude Proxy has been stopped"])
         } else {
-            serverManager.startServer(port: serverPort) { success, error in
+            serverManager.startServer(port: serverPort, strategy: accountStrategy) { success, error in
                 DispatchQueue.main.async {
                     if success {
+                        let strategyName = accountStrategy.prefix(1).uppercased() + accountStrategy.dropFirst()
                         NotificationCenter.default.post(name: .showServerNotification,
                                                         object: nil,
-                                                        userInfo: ["title": "Server Started", "body": "Antigravity Claude Proxy is running on port \(serverPort)"])
+                                                        userInfo: ["title": "Server Started", "body": "Running on port \(serverPort) with \(strategyName) strategy"])
                     } else {
                         NotificationCenter.default.post(name: .showServerNotification,
                                                         object: nil,

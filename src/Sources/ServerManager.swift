@@ -20,7 +20,7 @@ class ServerManager: ObservableObject {
 
     // MARK: - Server Control
 
-    func startServer(port: Int, completion: @escaping (Bool, String?) -> Void) {
+    func startServer(port: Int, strategy: String = "hybrid", completion: @escaping (Bool, String?) -> Void) {
         // Check if already running
         if isRunning {
             completion(true, nil)
@@ -41,13 +41,14 @@ class ServerManager: ObservableObject {
         errorPipe = Pipe()
 
         // Determine how to run the command
+        let strategyArg = "--strategy=\(strategy)"
         if npmPath.contains("antigravity-claude-proxy") {
             process?.executableURL = URL(fileURLWithPath: npmPath)
-            process?.arguments = ["start"]
+            process?.arguments = ["start", strategyArg]
         } else {
             // Use npx as fallback
             process?.executableURL = URL(fileURLWithPath: npmPath)
-            process?.arguments = ["antigravity-claude-proxy", "start"]
+            process?.arguments = ["antigravity-claude-proxy", "start", strategyArg]
         }
 
         // Set environment with proper PATH for node

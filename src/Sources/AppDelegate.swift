@@ -222,11 +222,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     private func startServer() {
         let port = UserDefaults.standard.integer(forKey: "serverPort")
         let effectivePort = port > 0 ? port : 8080
+        let strategy = UserDefaults.standard.string(forKey: "accountStrategy") ?? "hybrid"
 
-        serverManager.startServer(port: effectivePort) { [weak self] success, error in
+        serverManager.startServer(port: effectivePort, strategy: strategy) { [weak self] success, error in
             DispatchQueue.main.async {
                 if success {
-                    self?.showNotification(title: "Server Started", body: "AntiGravity Claude Proxy is running on port \(effectivePort)")
+                    let strategyName = strategy.prefix(1).uppercased() + strategy.dropFirst()
+                    self?.showNotification(title: "Server Started", body: "Running on port \(effectivePort) with \(strategyName) strategy")
                 } else {
                     self?.showNotification(title: "Server Failed", body: error ?? "Unknown error")
                 }
